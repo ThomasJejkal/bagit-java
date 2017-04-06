@@ -1,34 +1,50 @@
 pipeline {
   agent any
   stages {
-    stage('Unit tests') {
+    stage('Tests') {
       steps {
-        sh './gradlew test'
+        parallel(
+          "unit tests": {
+            sh './gradlew test'
+            
+          },
+          "Findbugs": {
+            sh './gradlew findbugsMain'
+            
+          },
+          "PMD": {
+            sh './gradlew pmd'
+            
+          },
+          "cpd check": {
+            sh './gradlew cpdCheck'
+            
+          }
+        )
       }
     }
-    stage('Find bugs') {
+    stage('Reports') {
       steps {
-        sh './gradlew findbugsMain'
-      }
-    }
-    stage('PMD') {
-      steps {
-        sh './gradlew pmdmain'
-      }
-    }
-    stage('cpd Check') {
-      steps {
-        sh './gradlew cpdCheck'
-      }
-    }
-    stage('code coverage report') {
-      steps {
-        sh './gradlew jacocoTestReport -x integrationTest'
+        parallel(
+          "generate code coverage": {
+            sh './gradlew jacocoTestReport -x integrationTest'
+            
+          },
+          "publish unit tests": {
+            junit(testResults: '**/build/test-results/**/*.xml', allowEmptyResults: true)
+            
+          }
+        )
       }
     }
     stage('javadoc') {
       steps {
         sh './gradlew javadoc'
+      }
+    }
+    stage('check dependencies') {
+      steps {
+        sh './gradlew dependencyCheck'
       }
     }
   }
