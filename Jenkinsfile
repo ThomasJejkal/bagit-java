@@ -1,32 +1,25 @@
 pipeline {
   agent any
   stages {
-    stage('Tests') {
+    stage('Generate Javadoc') {
       steps {
-        parallel(
-          "unit tests": {
-            sh './gradlew test'
-            
-          },
-          "Findbugs": {
-            sh './gradlew findbugsMain'
-            
-          },
-          "PMD": {
-            sh './gradlew pmd'
-            
-          },
-          "cpd check": {
-            sh './gradlew cpdCheck'
-            
-          }
-        )
+        sh './gradlew javadoc'
+      }
+    }
+    stage('Check Dependencies') {
+      steps {
+        sh './gradlew dependencyCheck'
+      }
+    }
+    stage('Check Code Quality') {
+      steps {
+        sh './gradlew test pmdMain findbugsMain pmdMain cpdCheck'
       }
     }
     stage('Reports') {
       steps {
         parallel(
-          "generate code coverage": {
+          "Reports": {
             sh './gradlew jacocoTestReport -x integrationTest'
             
           },
@@ -35,16 +28,6 @@ pipeline {
             
           }
         )
-      }
-    }
-    stage('javadoc') {
-      steps {
-        sh './gradlew javadoc'
-      }
-    }
-    stage('check dependencies') {
-      steps {
-        sh './gradlew dependencyCheck'
       }
     }
   }
