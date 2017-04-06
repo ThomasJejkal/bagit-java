@@ -8,7 +8,8 @@ pipeline {
     }
     stage('Unit tests') {
       steps {
-        sh './gradlew test'
+        sh '''pwd
+ls'''
       }
     }
   }
