@@ -1,14 +1,14 @@
 pipeline {
   agent any
   stages {
-    stage('Unit tests') {
+    stage('Download compliance suite') {
       steps {
-        sh 'gradle test'
+        git 'https://github.com/loc-rdc/bagit-conformance-suite'
       }
     }
-    stage('Integration tests') {
+    stage('Unit tests') {
       steps {
-        sh 'gradle integrationTest'
+        sh './gradlew test'
       }
     }
   }
